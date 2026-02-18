@@ -9,7 +9,7 @@ public class ConsumoRunnable implements Runnable{
         this.c = c;
         this.red = r;
     }
-    public synchronized void run(){
+    public void run(){
         resultado = red.getZona(c.getZona()).tramitarConsumo(c);
         red.getZona(c.getZona()).getVentana().traza (c.getIdConsumo()+ " - Tramitado: "+resultado);
         

@@ -18,7 +18,7 @@ public class CentroControl {
 
     public int getIdZona() { return zona.getIdZona(); }
 
-    public String enviarTrabajo(Consumo c) {
+    public synchronized String enviarTrabajo(Consumo c) {
 
     	Random r = new Random();
         // Simulamos un tiempo de tramitación del consumo

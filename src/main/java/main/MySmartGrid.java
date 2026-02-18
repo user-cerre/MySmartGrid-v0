@@ -19,7 +19,7 @@ public class MySmartGrid {
         System.out.println("Leidos " + consumos.size() + " consumos desde " + Config.FICHERO_CONSUMOS);
 
         // Tramitamos los consumos de manera secuencial
-        String resultado;
+        // String resultado;
         List<Thread> threadList = new ArrayList<Thread>();
         for (Consumo c : consumos) {
             ConsumoRunnable c1 = new ConsumoRunnable(c, red);
@@ -34,8 +34,10 @@ public class MySmartGrid {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            red.imprimeAuditoria();
         }
+        
+        // Auditoría final después de que todos los consumos se hayan procesado
+        red.imprimeAuditoria();
     }
 
 }
