@@ -34,6 +34,7 @@ public class MySmartGrid {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            //ESTO ES UNA PRUEBA
         }
         
         // Auditoría final después de que todos los consumos se hayan procesado
