@@ -3,10 +3,13 @@ package operators;
 import java.util.Random;
 
 import energy.Consumo;
+import energy.ConsumoRunnable;
 import energy.ZonaEnergetica;
 
 public class CentroControl {
     private ZonaEnergetica zona;
+    private ConsumoRunnable consumoRunnable;//Los consumos se depositaran en el centro de control
+    
 
     public CentroControl() {
         

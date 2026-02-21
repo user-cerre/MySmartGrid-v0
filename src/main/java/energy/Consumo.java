@@ -40,7 +40,7 @@ public class Consumo implements Serializable {
         return sum;
     }
 
-    public static Consumo generaConsumo(int numZonas, int contador, Random rnd) {
+    public static Consumo generaConsumo(int numZonas, int contador, Random rnd) {//Consume aleatoriamente una cantidad de bateria
         CanalConsumo[] canales = CanalConsumo.values();
         CanalConsumo canal = canales[rnd.nextInt(canales.length)];
         int zona = rnd.nextInt(Math.max(1, numZonas));

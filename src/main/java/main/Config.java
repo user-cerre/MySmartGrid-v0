@@ -4,7 +4,7 @@ public final class Config {
     private Config() {}
 
     // --- Configuracion general ---
-    public static final int NUM_OPERADORES_POR_ZONA = 3;
+    public static final int NUM_OPERADORES_POR_ZONA = 3;// Número de operarios 
     public static final int NUM_ZONAS = 5;
     
     // --- Ventanas ---
