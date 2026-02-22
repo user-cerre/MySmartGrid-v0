@@ -22,4 +22,8 @@ public final class Config {
 
     // Semilla para generacion reproducible
     public static final long SEED = 12345L;
+
+    // Operarios de carga
+    public static final int NUM_OPERARIOS_CARGA_POR_ZONA = 2;  // Número de operarios de carga por zona
+    public static final double CANTIDAD_RECARGA_POR_CICLO = 100.0;  // kWh que recarga cada operario en cada ciclo
 }
