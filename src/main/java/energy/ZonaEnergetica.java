@@ -5,13 +5,16 @@ import pcd.util.Ventana;
 import storage.Bateria;
 
 import java.awt.Color;
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Queue;
 
 public class ZonaEnergetica {
     private final int idZona;
     private final CuentaEnergetica cuenta;
     private final Bateria bateria;
     private final CentroControl centroControl;
+    private Queue<CentroControl> colaOperaciones;//Esta es la cola de la que se hacen las operaciones
     private Ventana v;
 
     public ZonaEnergetica(int idZona, CuentaEnergetica cuenta, Bateria bateria, CentroControl centroControl, Ventana _v) {
@@ -20,6 +23,7 @@ public class ZonaEnergetica {
         this.bateria = Objects.requireNonNull(bateria);
         this.centroControl = Objects.requireNonNull(centroControl);
         this.v = _v;
+        this.colaOperaciones = new LinkedList<>();
     }
 
     public int getIdZona() { return idZona; }
