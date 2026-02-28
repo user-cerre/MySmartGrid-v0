@@ -5,9 +5,7 @@ import pcd.util.Ventana;
 import storage.Bateria;
 
 import java.awt.Color;
-import java.util.LinkedList;
 import java.util.Objects;
-import java.util.Queue;
 
 public class ZonaEnergetica {
     private final int idZona;

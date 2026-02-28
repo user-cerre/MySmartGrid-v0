@@ -62,9 +62,9 @@ public class CentroControl {
             throw new IllegalArgumentException ("Consumo pendiente no puede ser null");
         }
     }
-    private synchronized boolean shouldTerminate(){
-        return colaConsumo.isEmpty() && activeProducers == 0;
-    }
+    // private synchronized boolean shouldTerminate(){
+    //     return colaConsumo.isEmpty() && activeProducers == 0;
+    // }
     public synchronized ConsumoPendiente tomar() throws InterruptedException{
         while (colaConsumo.isEmpty()){
             if (activeProducers == 0){

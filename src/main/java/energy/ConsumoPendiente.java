@@ -1,9 +1,6 @@
 
 
 package energy;
-
-import java.util.Objects;
-
 public class ConsumoPendiente {
 
     private final Consumo consumo;
