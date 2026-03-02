@@ -99,5 +99,31 @@ public class MySmartGrid {
 
         // Auditoría final
         red.imprimeAuditoria();
+
+        //Versión 4: streams
+        System.out.println("Consumos con kwh < 5:");
+        consumos.parallelStream()
+        .filter(d->d.getTotalKWh() < 5)
+        .map(a->a.getIdConsumo())
+        .forEachOrdered(d->System.out.println(d));
+
+        System.out.println("Consumo más alto:");
+
+        consumos.parallelStream()               
+        .mapToDouble(c -> c.getTotalKWh())
+        .max()
+        .ifPresent(max -> System.out.println(max));
+    
+        // Prueba 1: Sagitario, 24 (No debería imprimir nada)
+        if (consumos.parallelStream()
+        .anyMatch(c -> c.getDireccion().equals("Sagitario, 24"))) {
+            System.out.println("Encontrado");
+        }
+
+        // Prueba 2: Berna, 11 (Debería imprimir "Encontrado")
+        if (consumos.parallelStream()
+        .anyMatch(c -> c.getDireccion().equals("Berna, 11"))) {
+            System.out.println("Encontrado");
+        }
     }
 }

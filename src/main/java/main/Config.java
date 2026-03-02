@@ -15,7 +15,7 @@ public final class Config {
     public static final double NIVEL_INICIAL_BATERIA = 1000.0;//1000 (estaba a 120.0)
 
     // Ficheros
-    public static final String FICHERO_CONSUMOS = "consumos2.bin";//era el 5
+    public static final String FICHERO_CONSUMOS = "consumos5.bin";//era el 5
 
     // Generacion de consumos
     public static final int NUM_CONSUMOS_A_GENERAR = 50;

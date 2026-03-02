@@ -26,9 +26,10 @@ public class ConsumoRunnable implements Runnable{
             System.err.println("Productor interrumpido: " + c.getIdConsumo());
         }finally{
             centro.producerFinished();
+            resultado = red.getZona(c.getZona()).tramitarConsumo(c);
         }
-        // resultado = red.getZona(c.getZona()).tramitarConsumo(c);
         // 
+        
         
     }
 }
