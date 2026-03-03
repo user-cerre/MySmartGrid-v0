@@ -13,6 +13,7 @@ public class CentroControl {
     private ZonaEnergetica zona;
     private Queue<ConsumoPendiente> colaConsumo;
     int activeProducers;
+    Color color = Color.BLUE;
 
     public CentroControl() {
         colaConsumo = new LinkedList<>();
@@ -27,7 +28,7 @@ public class CentroControl {
 
     public String procesarConsumo(Consumo c) {
 
-        zona.getVentana().traza(c.getIdConsumo() + " solicita: " + c.getTotalKWh(), Color.BLUE);
+        zona.getVentana().traza(c.getIdConsumo() + " solicita: " + c.getTotalKWh(), color);
 
     	Random r = new Random();
         // Simulamos un tiempo de tramitación del consumo
