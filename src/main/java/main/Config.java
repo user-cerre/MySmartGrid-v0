@@ -11,8 +11,8 @@ public final class Config {
     public static final int TAMAÑO_VENTANA = 250;
 
     // Baterias (kWh)
-    public static final double CAPACIDAD_BATERIA = 1000.0;//1000 (estaba a 200.0)
-    public static final double NIVEL_INICIAL_BATERIA = 1000.0;//1000 (estaba a 120.0)
+    public static final double CAPACIDAD_BATERIA = 200.0;//1000 (estaba a 200.0)
+    public static final double NIVEL_INICIAL_BATERIA = 120.0;//1000 (estaba a 120.0)
 
     // Ficheros
     public static final String FICHERO_CONSUMOS = "consumos5.bin";//era el 5

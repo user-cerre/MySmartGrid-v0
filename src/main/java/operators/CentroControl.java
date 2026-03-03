@@ -3,6 +3,7 @@ package operators;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.awt.Color;
 
 import energy.Consumo;
 import energy.ConsumoPendiente;
@@ -26,6 +27,8 @@ public class CentroControl {
 
     public String procesarConsumo(Consumo c) {
 
+        zona.getVentana().traza(c.getIdConsumo() + " solicita: " + c.getTotalKWh(), Color.BLUE);
+
     	Random r = new Random();
         // Simulamos un tiempo de tramitación del consumo
         try {
@@ -36,12 +39,22 @@ public class CentroControl {
 		}
        
         double total = c.getTotalKWh();
-        double suministrado = zona.getBateria().suministra(total);
+        double suministrado;
+        try {
+            while (!zona.getBateria().puedeSuministrar(total)) {
+                zona.getBateria().solicitarRecarga();
+                zona.getBateria().esperarRecarga(total);
+            }
+            suministrado = zona.getBateria().suministra(total);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "ERROR: Interrumpido esperando recarga";
+        }
         zona.getCuenta().anotaConsumo(suministrado);
         
         String resultado = (suministrado >= total)
-                ? "OK: suministrados " + fmt(total) + " kWh"
-                : "PARCIAL: suministrados " + fmt(suministrado) + " kWh (faltan " + fmt(total - suministrado) + " kWh)";
+            ? "OK: suministrados " + fmt(total) + " kWh"
+            : "PARCIAL: suministrados " + fmt(suministrado) + " kWh (faltan " + fmt(total - suministrado) + " kWh)";
     	traza ("Trabajo completado para: "+c.getIdConsumo());
         return resultado;
     }

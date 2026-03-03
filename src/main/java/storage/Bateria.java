@@ -37,7 +37,6 @@ public class Bateria {
     public synchronized void carga(double kWh) {
         if (kWh <= 0) return;
         nivelActualKWh = Math.min(capacidadMaxKWh, nivelActualKWh + kWh);
-        recargaNecesaria = false;
         notifyAll();
     }
     
@@ -62,6 +61,7 @@ public class Bateria {
         while (!recargaNecesaria) {
             wait();
         }
+        recargaNecesaria = false;
     }
     
     public synchronized void despertarOperariosCarga() {

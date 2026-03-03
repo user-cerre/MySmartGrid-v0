@@ -21,6 +21,9 @@ public class MySmartGrid {
 
         List<Consumo> consumos = Consumo.consumosDesdeFichero(Config.FICHERO_CONSUMOS);
         System.out.println("Leidos " + consumos.size() + " consumos desde " + Config.FICHERO_CONSUMOS);
+        double totalSolicitadoVentanas = consumos.stream().mapToDouble(Consumo::getTotalKWh).sum();
+        System.out.println("Total solicitado (lineas 'solicita' en ventanas): "
+            + String.format(java.util.Locale.ROOT, "%.2f", totalSolicitadoVentanas) + " kWh");
         
         // LANZAMIENTO DE PRODUCTORES (primero para que activeProducers > 0)
         List<Thread> threadList = new ArrayList<Thread>();
