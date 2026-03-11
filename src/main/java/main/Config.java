@@ -26,4 +26,6 @@ public final class Config {
     // Operarios de carga
     public static final int NUM_OPERARIOS_CARGA_POR_ZONA = 2;  // Número de operarios de carga por zona
     public static final double CANTIDAD_RECARGA_POR_CICLO = 100.0;  // kWh que recarga cada operario en cada ciclo
+    // Semáforos
+    public static final int MAX_CONSUMOS_EN_TRAMITACION = 2;//Número de máximo de consumos que puede haber en tramitación simultánea por zona
 }

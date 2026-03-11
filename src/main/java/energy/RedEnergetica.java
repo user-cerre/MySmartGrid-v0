@@ -3,6 +3,8 @@ package energy;
 import operators.CentroControl;
 import pcd.util.Ventana;
 import storage.Bateria;
+import storage.Eolica;
+import storage.Solar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,14 +23,18 @@ public class RedEnergetica {
         List<ZonaEnergetica> tmp = new ArrayList<>(numZonas);
         List<CentroControl> ccs = new ArrayList<>(numZonas);
         Bateria bateria = null;
+        Eolica eolica = null;
+        Solar solar = null;
         
         for (int i = 0; i < numZonas; i++) {
             CentroControl cc = new CentroControl();
             ccs.add(cc);
             CuentaEnergetica cuenta = new CuentaEnergetica(0.0);
             bateria = new Bateria(capacidadBateria, nivelInicialBateria);
+            eolica = new Eolica(capacidadBateria, nivelInicialBateria);
+            solar = new Solar(capacidadBateria, nivelInicialBateria);
             Ventana ventanaZona = new Ventana (i*Config.TAMAÑO_VENTANA,1,Config.TAMAÑO_VENTANA, Config.TAMAÑO_VENTANA,"Zona "+i);
-            zona = new ZonaEnergetica(i, cuenta, bateria, cc, ventanaZona);
+            zona = new ZonaEnergetica(i, cuenta, bateria,eolica, solar, cc, ventanaZona);
             bateria.setVentana(ventanaZona);
             cc.setZona(zona);
             tmp.add(zona);
@@ -60,15 +66,11 @@ public class RedEnergetica {
         zonas.parallelStream()
         .forEachOrdered(z->{
             System.out.println("Zona " + z.getIdZona()
-                    + " | consumidos =" + fmt(z.getCuenta().getBalanceKWh()) + " kWh"
-                    + " | bateria=" + fmt(z.getBateria().getNivelActualKWh()) + " kWh");
-
+                    + " | consumidos=" + fmt(z.getCuenta().getBalanceKWh()) + " kWh"
+                    + " | bateria=" + fmt(z.getBateria().getNivelActualKWh()) + " kWh"
+                    + " | solar=" + fmt(z.getSolar().getNivelActualKWh()) + " kWh"
+                    + " | eolica=" + fmt(z.getEolica().getNivelActualKWh()) + " kWh");
         });
-        // for (ZonaEnergetica z : zonas) {
-        //     System.out.println("Zona " + z.getIdZona()
-        //             + " | consumidos =" + fmt(z.getCuenta().getBalanceKWh()) + " kWh"
-        //             + " | bateria=" + fmt(z.getBateria().getNivelActualKWh()) + " kWh");
-        // }
         System.out.println("Consumo total: " + fmt(auditoriaBalanceTotal()) + " kWh");
         System.out.println("Energia disponible total: " + fmt(auditoriaEnergiaDisponibleTotal()) + " kWh");
         System.out.println("=====================\n");

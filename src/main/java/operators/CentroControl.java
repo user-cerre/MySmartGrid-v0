@@ -3,22 +3,31 @@ package operators;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.awt.Color;
-import java.util.concurrent.locks.*;
 
 import energy.Consumo;
 import energy.ConsumoPendiente;
 import energy.ZonaEnergetica;
+import storage.Bateria;
+import storage.Eolica;
+import storage.Solar;
+import energy.Demanda;
+import main.Config;
 
 public class CentroControl {
     private ZonaEnergetica zona;
     private Queue<ConsumoPendiente> colaConsumo;
+    private Semaphore semArranque;
+    private Semaphore semConsumos;
     int activeProducers;
     Color color = Color.BLUE;
 
     public CentroControl() {
         colaConsumo = new LinkedList<>();
         activeProducers = 0;
+        semArranque = new Semaphore(0);
+        semConsumos = new Semaphore(Config.MAX_CONSUMOS_EN_TRAMITACION);
     }
 
     public void setZona(ZonaEnergetica zona) {
@@ -32,35 +41,72 @@ public class CentroControl {
     public String procesarConsumo(Consumo c) {
 
         zona.getVentana().traza(c.getIdConsumo() + " solicita: " + c.getTotalKWh(), color);
-
-        Random r = new Random();
-        // Simulamos un tiempo de tramitación del consumo
+        double kWhPrincipal = 0;
+        double kWhSolar = 0;
+        double kWhEolica = 0;
+        Bateria bateria = zona.getBateria();
+        Eolica eolica = zona.getEolica();
+        Solar solar = zona.getSolar();
+        for (Demanda d: c.getDemandas()) {
+            String tipo = d.getIdTipo();
+            double kWh = d.getKWh();
+            if(tipo.equals("RAPIDA")){
+                kWhPrincipal += kWh;
+            }else if(tipo.equals("SOLAR")){
+                kWhSolar += kWh;
+            }else if(tipo.equals("EOLICA")){
+                kWhEolica += kWh;
+            }else{
+                return "ERROR tipo demanda desconocido";
+            }     
+        }
         try {
-            Thread.sleep(r.nextInt(200));
+            if(kWhPrincipal > 0){
+                while (!bateria.puedeSuministrar(kWhPrincipal)) {
+                    bateria.solicitarRecarga();
+                    bateria.esperarRecarga(kWhPrincipal);
+                    
+                }
+            }
+            if(kWhEolica > 0){
+                eolica.esperarDisponibilidad(kWhEolica);
+            }
+            if(kWhSolar > 0){
+                solar.esperarDisponibilidad(kWhSolar);
+            }
+            double suministradoPrincipal = 0;
+            double suministradoSolar = 0;
+            double suministradoEolica = 0;
+
+            if(kWhPrincipal > 0){
+                suministradoPrincipal = bateria.suministra(kWhPrincipal);
+            }
+            if(kWhEolica > 0){
+                eolica.retirar(kWhEolica);
+                suministradoEolica = kWhEolica;
+            }
+            if(kWhSolar > 0){
+                solar.retirar(kWhSolar);
+                suministradoSolar = kWhSolar;
+            }
+            double totalSuministrado = suministradoPrincipal + suministradoEolica + suministradoSolar;
+            if(totalSuministrado != (kWhPrincipal +kWhEolica +kWhSolar)){
+                return "ERROR: inconsistencia";
+            }
+            zona.getCuenta().anotaConsumo(totalSuministrado);
+            traza("Trabajo completado para: " + c.getIdConsumo());
+            return "OK: suministrados "+ totalSuministrado +"kWh";
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return "ERROR: Interrumpido durante tramitación";
         }
+        
 
-        double total = c.getTotalKWh();
-        double suministrado;
-        try {
-            while (!zona.getBateria().puedeSuministrar(total)) {
-                zona.getBateria().solicitarRecarga();
-                zona.getBateria().esperarRecarga(total);
-            }
-            suministrado = zona.getBateria().suministra(total);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return "ERROR: Interrumpido esperando recarga";
-        }
-        zona.getCuenta().anotaConsumo(suministrado);
-
-        String resultado = (suministrado >= total)
-                ? "OK: suministrados " + fmt(total) + " kWh"
-                : "PARCIAL: suministrados " + fmt(suministrado) + " kWh (faltan " + fmt(total - suministrado) + " kWh)";
-        traza("Trabajo completado para: " + c.getIdConsumo());
-        return resultado;
+        // String resultado = (suministrado >= total)
+        //         ? "OK: suministrados " + fmt(total) + " kWh"
+        //         : "PARCIAL: suministrados " + fmt(suministrado) + " kWh (faltan " + fmt(total - suministrado) + " kWh)";
+        
+        // return resultado;
     }
 
     private String fmt(double x) {
@@ -105,5 +151,19 @@ public class CentroControl {
         activeProducers--;
         notifyAll();
         traza("Productor finalizado (activos: " + activeProducers + ")");
+    }
+    public void liberarOperarios(int n){
+        semArranque.release(n);
+    }
+    public void esperarArranque() throws InterruptedException {
+        semArranque.acquire();
+    }
+    
+    public void adquirirSlotConsumo() throws InterruptedException {
+        semConsumos.acquire();
+    }
+    
+    public void liberarSlotConsumo() {
+        semConsumos.release();
     }
 }

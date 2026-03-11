@@ -3,6 +3,8 @@ package energy;
 import operators.CentroControl;
 import pcd.util.Ventana;
 import storage.Bateria;
+import storage.Eolica;
+import storage.Solar;
 
 import java.awt.Color;
 import java.util.Objects;
@@ -11,13 +13,17 @@ public class ZonaEnergetica {
     private final int idZona;
     private final CuentaEnergetica cuenta;
     private final Bateria bateria;
+    private final Eolica eolica;
+    private final Solar solar;
     private final CentroControl centroControl;
     private Ventana v;
 
-    public ZonaEnergetica(int idZona, CuentaEnergetica cuenta, Bateria bateria, CentroControl centroControl, Ventana _v) {
+    public ZonaEnergetica(int idZona, CuentaEnergetica cuenta, Bateria bateria,Eolica eolica, Solar solar, CentroControl centroControl, Ventana _v) {
         this.idZona = idZona;
         this.cuenta = Objects.requireNonNull(cuenta);
         this.bateria = Objects.requireNonNull(bateria);
+        this.eolica = Objects.requireNonNull(eolica);
+        this.solar = Objects.requireNonNull(solar);
         this.centroControl = Objects.requireNonNull(centroControl);
         this.v = _v;
     }
@@ -58,5 +64,10 @@ public class ZonaEnergetica {
     	v.traza(s,color);
     }
 
-
+    public Eolica getEolica(){
+        return eolica;
+    }
+    public Solar getSolar(){
+        return solar;
+    }    
 }

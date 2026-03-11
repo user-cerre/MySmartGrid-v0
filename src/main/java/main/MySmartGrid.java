@@ -7,6 +7,8 @@ import operators.OperarioRed;
 import storage.Bateria;
 import operators.CentroControl;
 import operators.OperarioCarga;
+import operators.RobotEolica;
+import operators.RobotSolar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,27 @@ public class MySmartGrid {
         System.out.println("Total solicitado (lineas 'solicita' en ventanas): "
             + String.format(java.util.Locale.ROOT, "%.2f", totalSolicitadoVentanas) + " kWh");
         
+        List<RobotEolica> listaEolicas = new ArrayList<>();
+        List<Thread> threadsEolica = new ArrayList<>();
+        for (int z = 0 ; z< Config.NUM_ZONAS; z++) {
+            RobotEolica robotEolica = new RobotEolica(red.getZona(z).getEolica(), z);
+            Thread robotThread = new Thread(robotEolica);
+            threadsEolica.add(robotThread);
+            listaEolicas.add(robotEolica);
+            robotThread.setDaemon(true);//
+            robotThread.start();
+        }
+
+        List<RobotSolar> listaSolares = new ArrayList<>();
+        List<Thread> threadsSolar = new ArrayList<>();
+        for (int z = 0 ; z< Config.NUM_ZONAS; z++) {
+            RobotSolar robotSolar = new RobotSolar(red.getZona(z).getSolar(), z);
+            Thread robotThread = new Thread(robotSolar);
+            threadsSolar.add(robotThread);
+            listaSolares.add(robotSolar);
+            robotThread.setDaemon(true);//
+            robotThread.start();
+        }
         // LANZAMIENTO DE PRODUCTORES (primero para que activeProducers > 0)
         List<Thread> threadList = new ArrayList<Thread>();
         for (Consumo c : consumos) {
@@ -44,6 +67,7 @@ public class MySmartGrid {
                 listaOperariosCarga.add(operarioCarga);
                 Thread threadCarga = new Thread(operarioCarga);
                 threadsCarga.add(threadCarga);
+                threadCarga.setDaemon(true);//
                 threadCarga.start();
             }
         }
@@ -57,6 +81,7 @@ public class MySmartGrid {
                 operarios.add(operario);
                 operario.start();
             }
+            cc.liberarOperarios(Config.NUM_OPERADORES_POR_ZONA);
         }
         
         // Esperar productores
@@ -78,27 +103,56 @@ public class MySmartGrid {
         }
 
         // Detener operarios de carga
-        for (OperarioCarga opCarga : listaOperariosCarga) {
-            opCarga.detener();
-        }
+        // for (OperarioCarga opCarga : listaOperariosCarga) {
+        //     opCarga.detener();
+        // }
         
         // Despertar operarios de carga esperando en bateria
-        for (int z = 0; z < Config.NUM_ZONAS; z++) {
-            red.getZona(z).getBateria().despertarOperariosCarga();
-        }
+        // for (int z = 0; z < Config.NUM_ZONAS; z++) {
+        //     red.getZona(z).getBateria().despertarOperariosCarga();
+        // }
 
         // Esperar a que terminen, con timeout para evitar bloqueo indefinido
-        for (Thread threadCarga : threadsCarga) {
-            try {
-                threadCarga.join(100); // waait max 100ms
-                if (threadCarga.isAlive()) {
-                    threadCarga.interrupt();  // Interrupt if still running
-                    threadCarga.join(100);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        // for (Thread threadCarga : threadsCarga) {
+        //     try {
+        //         threadCarga.join(100); // waait max 100ms
+        //         if (threadCarga.isAlive()) {
+        //             threadCarga.interrupt();  // Interrupt if still running
+        //             threadCarga.join(100);
+        //         }
+        //     } catch (Exception e) {
+        //         e.printStackTrace();
+        //     }
+        // }
+        // // Detener Robots
+        // for (RobotEolica r : listaEolicas) {
+        //     r.detener();
+        // }
+        // for(Thread threadEolica: threadsEolica){
+        //     try {
+        //         threadEolica.join(100);
+        //         if (threadEolica.isAlive()) {
+        //             threadEolica.interrupt();  // Interrupt if still running
+        //             threadEolica.join(100);
+        //         }
+        //     } catch (Exception e) {
+        //         e.printStackTrace();
+        //     }
+        // }
+        // for (RobotSolar r : listaSolares) {
+        //     r.detener();
+        // }
+        // for(Thread threadSolar: threadsSolar){
+        //     try {
+        //         threadSolar.join(100);
+        //         if (threadSolar.isAlive()) {
+        //             threadSolar.interrupt();  // Interrupt if still running
+        //             threadSolar.join(100);
+        //         }
+        //     } catch (Exception e) {
+        //         e.printStackTrace();
+        //     }
+        // }
 
         // Auditoría final
         red.imprimeAuditoria();
