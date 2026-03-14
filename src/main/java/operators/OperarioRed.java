@@ -2,7 +2,6 @@
 package operators;
 
 import energy.ConsumoPendiente;
-import java.util.concurrent.locks.*;
 
 public class OperarioRed implements Runnable {
 

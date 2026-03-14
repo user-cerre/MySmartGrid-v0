@@ -26,9 +26,6 @@ public class ConsumoRunnable implements Runnable{
             System.err.println("Productor interrumpido: " + c.getIdConsumo());
         }finally{
             centro.producerFinished();
-        }
-        // 
-        
-        
+        }  
     }
 }

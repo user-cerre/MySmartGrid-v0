@@ -1,6 +1,5 @@
 package operators;
 import java.util.Objects;
-import java.util.concurrent.locks.*;
 
 import storage.Bateria;
 

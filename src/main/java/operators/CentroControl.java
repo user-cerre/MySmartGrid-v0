@@ -2,7 +2,6 @@ package operators;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.awt.Color;
 
@@ -93,24 +92,13 @@ public class CentroControl {
             if(totalSuministrado != (kWhPrincipal +kWhEolica +kWhSolar)){
                 return "ERROR: inconsistencia";
             }
-            zona.getCuenta().anotaConsumo(totalSuministrado);
+            zona.getCuenta().anotaConsumo(suministradoPrincipal,suministradoEolica,suministradoSolar);
             traza("Trabajo completado para: " + c.getIdConsumo());
             return "OK: suministrados "+ totalSuministrado +"kWh";
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return "ERROR: Interrumpido durante tramitación";
         }
-        
-
-        // String resultado = (suministrado >= total)
-        //         ? "OK: suministrados " + fmt(total) + " kWh"
-        //         : "PARCIAL: suministrados " + fmt(suministrado) + " kWh (faltan " + fmt(total - suministrado) + " kWh)";
-        
-        // return resultado;
-    }
-
-    private String fmt(double x) {
-        return String.format(java.util.Locale.ROOT, "%.2f", x);
     }
 
     public void traza(String msg) {
@@ -127,9 +115,6 @@ public class CentroControl {
         }
     }
 
-    // private synchronized boolean shouldTerminate(){
-    // return colaConsumo.isEmpty() && activeProducers == 0;
-    // }
     public synchronized ConsumoPendiente tomar() throws InterruptedException {
         while (colaConsumo.isEmpty()) {
             if (activeProducers == 0) {

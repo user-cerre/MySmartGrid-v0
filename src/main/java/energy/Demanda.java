@@ -6,7 +6,6 @@ import java.util.Random;
 
 public class Demanda implements Serializable {
     private static final long serialVersionUID = 1L;
-
     private final String idTipo;
     private final double kWh;
     private final int prioridad;

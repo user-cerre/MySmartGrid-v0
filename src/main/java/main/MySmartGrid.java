@@ -102,58 +102,6 @@ public class MySmartGrid {
             }
         }
 
-        // Detener operarios de carga
-        // for (OperarioCarga opCarga : listaOperariosCarga) {
-        //     opCarga.detener();
-        // }
-        
-        // Despertar operarios de carga esperando en bateria
-        // for (int z = 0; z < Config.NUM_ZONAS; z++) {
-        //     red.getZona(z).getBateria().despertarOperariosCarga();
-        // }
-
-        // Esperar a que terminen, con timeout para evitar bloqueo indefinido
-        // for (Thread threadCarga : threadsCarga) {
-        //     try {
-        //         threadCarga.join(100); // waait max 100ms
-        //         if (threadCarga.isAlive()) {
-        //             threadCarga.interrupt();  // Interrupt if still running
-        //             threadCarga.join(100);
-        //         }
-        //     } catch (Exception e) {
-        //         e.printStackTrace();
-        //     }
-        // }
-        // // Detener Robots
-        // for (RobotEolica r : listaEolicas) {
-        //     r.detener();
-        // }
-        // for(Thread threadEolica: threadsEolica){
-        //     try {
-        //         threadEolica.join(100);
-        //         if (threadEolica.isAlive()) {
-        //             threadEolica.interrupt();  // Interrupt if still running
-        //             threadEolica.join(100);
-        //         }
-        //     } catch (Exception e) {
-        //         e.printStackTrace();
-        //     }
-        // }
-        // for (RobotSolar r : listaSolares) {
-        //     r.detener();
-        // }
-        // for(Thread threadSolar: threadsSolar){
-        //     try {
-        //         threadSolar.join(100);
-        //         if (threadSolar.isAlive()) {
-        //             threadSolar.interrupt();  // Interrupt if still running
-        //             threadSolar.join(100);
-        //         }
-        //     } catch (Exception e) {
-        //         e.printStackTrace();
-        //     }
-        // }
-
         // Auditoría final
         red.imprimeAuditoria();
 

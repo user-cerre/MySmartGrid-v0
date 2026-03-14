@@ -54,26 +54,57 @@ public class RedEnergetica {
         for (ZonaEnergetica z : zonas) sum += z.getCuenta().getBalanceKWh();
         return sum;
     }
+    public double BalanceRapida() {
+        double sum = 0.0;
+        for (ZonaEnergetica z : zonas) sum += z.getCuenta().getBalanceRapidaKWh();
+        return sum;
+    }
+    public double BalanceEolica() {
+        double sum = 0.0;
+        for (ZonaEnergetica z : zonas) sum += z.getCuenta().getBalanceEolicaKWh();
+        return sum;
+    }
+    public double BalanceSolar() {
+        double sum = 0.0;
+        for (ZonaEnergetica z : zonas) sum += z.getCuenta().getBalanceSolarKWh();
+        return sum;
+    }
 
     public double auditoriaEnergiaDisponibleTotal() {
+        return totalEnergiaRapida() + totalEnergiaEolica() + totalEnergiaSolar();
+    }
+    public double totalEnergiaRapida() {
         double sum = 0.0;
         for (ZonaEnergetica z : zonas) sum += z.getBateria().getNivelActualKWh();
         return sum;
     }
-
+    public double totalEnergiaEolica() {
+        double sum = 0.0;
+        for (ZonaEnergetica z : zonas) sum += z.getEolica().getNivelActualKWh();
+        return sum;
+    }
+    public double totalEnergiaSolar() {
+        double sum = 0.0;
+        for (ZonaEnergetica z : zonas) sum += z.getSolar().getNivelActualKWh();
+        return sum;
+    }
     public void imprimeAuditoria() {
         System.out.println("\n=== AUDITORIA RED ===");
         zonas.parallelStream()
         .forEachOrdered(z->{
             System.out.println("Zona " + z.getIdZona()
                     + " | consumidos=" + fmt(z.getCuenta().getBalanceKWh()) + " kWh"
-                    + " | bateria=" + fmt(z.getBateria().getNivelActualKWh()) + " kWh"
+                    + " | rapida=" + fmt(z.getBateria().getNivelActualKWh()) + " kWh"
                     + " | solar=" + fmt(z.getSolar().getNivelActualKWh()) + " kWh"
                     + " | eolica=" + fmt(z.getEolica().getNivelActualKWh()) + " kWh");
         });
+        System.out.println("=====================");
+        System.out.println("CONSUMOS | Rapida: "+ fmt(BalanceRapida())+ " kWh"+" |Eolica: "+fmt(BalanceEolica())+ " kWh"+" |Solar:"+ fmt(BalanceSolar())+ " kWh");
+        System.out.println("DISPONIBLE | Rapida: "+ fmt(totalEnergiaRapida())+ " kWh"+" |Eolica: "+fmt(totalEnergiaEolica())+ " kWh"+" |Solar:"+ fmt(totalEnergiaSolar())+ " kWh");
+        System.out.println("=====================");
         System.out.println("Consumo total: " + fmt(auditoriaBalanceTotal()) + " kWh");
         System.out.println("Energia disponible total: " + fmt(auditoriaEnergiaDisponibleTotal()) + " kWh");
-        System.out.println("=====================\n");
+        System.out.println("=====================");
     }
 
     private String fmt(double x) {
