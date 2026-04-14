@@ -28,4 +28,6 @@ public final class Config {
     public static final double CANTIDAD_RECARGA_POR_CICLO = 100.0;  // kWh que recarga cada operario en cada ciclo
     // Semáforos
     public static final int MAX_CONSUMOS_EN_TRAMITACION = 2;//Número de máximo de consumos que puede haber en tramitación simultánea por zona
+    //Modo de lanzamiento de consumos: 0 = normal, 1 = observable, 2 = executor.
+    public static int CONSUMO_DESDE_FICHERO= 1;
 }

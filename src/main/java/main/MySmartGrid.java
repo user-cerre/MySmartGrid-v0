@@ -3,6 +3,8 @@ package main;
 import energy.Consumo;
 import energy.ConsumoRunnable;
 import energy.RedEnergetica;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
 import operators.OperarioRed;
 import storage.Bateria;
 import operators.CentroControl;
@@ -20,13 +22,43 @@ public class MySmartGrid {
                 Config.NUM_ZONAS,
                 Config.CAPACIDAD_BATERIA,
                 Config.NIVEL_INICIAL_BATERIA);
-
-        List<Consumo> consumos = Consumo.consumosDesdeFichero(Config.FICHERO_CONSUMOS);
+        //Lectura de consumos 
+        List<Consumo> consumos;
+        Observable<Consumo> consumosObs = Consumo.consumosDesdeFicheroObservable(Config.FICHERO_CONSUMOS);
+        if(Config.CONSUMO_DESDE_FICHERO == 1){
+            consumos = consumosObs.toList().blockingGet();
+        }else{
+            consumos = Consumo.consumosDesdeFichero(Config.FICHERO_CONSUMOS);
+        }
         System.out.println("Leidos " + consumos.size() + " consumos desde " + Config.FICHERO_CONSUMOS);
         double totalSolicitadoVentanas = consumos.stream().mapToDouble(Consumo::getTotalKWh).sum();
         System.out.println("Total solicitado (lineas 'solicita' en ventanas): "
             + String.format(java.util.Locale.ROOT, "%.2f", totalSolicitadoVentanas) + " kWh");
+        //TODO: Implementar aqui los observables
+        Observable <Consumo> fuente = Observable.fromIterable(consumos);
+        fuente
+        .subscribeOn(Schedulers.computation())
+        .map(Consumo::getTotalKWh)
+        .reduce(0.0, Double::sum)
+        .subscribe(total-> System.out.println("SUMA RXJAVA: "+ Thread.currentThread().getName()+ " |Total:"+ total), Throwable::printStackTrace);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // TODO: handle exception
+            Thread.currentThread().interrupt();
+        }
         
+        fuente
+        .subscribeOn(Schedulers.computation())
+        .filter(mayores-> mayores.getTotalKWh() > 20)
+        .subscribe(mayores-> System.out.println("MAYORES QUE 20 EN RXJAVA: "+Thread.currentThread().getName()+"|ID:"+ mayores.getIdConsumo()+"|Consumo: "+ mayores.getTotalKWh()), Throwable::printStackTrace);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // TODO: handle exception
+            Thread.currentThread().interrupt();
+        }
+
         List<RobotEolica> listaEolicas = new ArrayList<>();
         List<Thread> threadsEolica = new ArrayList<>();
         for (int z = 0 ; z< Config.NUM_ZONAS; z++) {
@@ -50,11 +82,28 @@ public class MySmartGrid {
         }
         // LANZAMIENTO DE PRODUCTORES (primero para que activeProducers > 0)
         List<Thread> threadList = new ArrayList<Thread>();
-        for (Consumo c : consumos) {
-            ConsumoRunnable c1 = new ConsumoRunnable(c, red);
-            Thread t1 = new Thread(c1);
-            threadList.add(t1);
-            t1.start();
+        Observable<String> lanzamientos = Observable.empty();
+        if(Config.CONSUMO_DESDE_FICHERO == 0){
+            for (Consumo c : consumos) {
+                ConsumoRunnable c1 = new ConsumoRunnable(c, red);
+                Thread t1 = new Thread(c1);
+                threadList.add(t1);
+                t1.start();
+            }
+        }else{
+           lanzamientos = consumosObs
+            .flatMap(c ->
+                Observable.fromCallable(() ->{
+                    ConsumoRunnable c1 = new ConsumoRunnable(c, red);
+                    Thread t1 = new Thread(c1);
+                    threadList.add(t1);
+                    t1.start();
+                    return c.getIdConsumo();
+                }).subscribeOn(Schedulers.computation())
+            );
+        }
+        if(Config.CONSUMO_DESDE_FICHERO == 1){
+            lanzamientos.blockingSubscribe();
         }
         
         // LANZAMIENTO DE OPERARIOS DE CARGA
@@ -83,7 +132,6 @@ public class MySmartGrid {
             }
             cc.liberarOperarios(Config.NUM_OPERADORES_POR_ZONA);
         }
-        
         // Esperar productores
         for (Thread t : threadList) {
             try {
@@ -92,7 +140,6 @@ public class MySmartGrid {
                 e.printStackTrace();
             }
         }
-
         // Esperar operarios
         for (Thread op : operarios) {
             try {
@@ -101,7 +148,7 @@ public class MySmartGrid {
                 e.printStackTrace();
             }
         }
-
+        
         // Auditoría final
         red.imprimeAuditoria();
 

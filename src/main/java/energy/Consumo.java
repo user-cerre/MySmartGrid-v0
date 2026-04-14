@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import io.reactivex.rxjava3.core.Observable;
 
 public class Consumo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -80,5 +81,21 @@ public class Consumo implements Serializable {
             System.err.println("Error leyendo fichero '" + path + "': " + e.getMessage());
         }
         return lista;
+    }
+
+    public static Observable<Consumo> consumosDesdeFicheroObservable (String path){
+        return Observable.create(emitter-> {
+            try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path))){
+                while (true) {
+                   Object obj = ois.readObject(); 
+                   if (!(obj instanceof Consumo)) throw new IllegalStateException("Objeto inesperado: " + obj.getClass());
+                   emitter.onNext((Consumo) obj);
+                }
+            } catch (EOFException eof) {
+                emitter.onComplete();
+            } catch (IOException | ClassNotFoundException e) {
+                emitter.onError(e);
+            }
+        });
     }
 }
