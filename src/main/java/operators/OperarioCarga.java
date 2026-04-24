@@ -1,5 +1,6 @@
 package operators;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 import storage.Bateria;
 
@@ -8,17 +9,20 @@ public class OperarioCarga implements Runnable{
     private final int idOperario;
     private final double cantidadRecarga;
     private volatile boolean activo = true;
+    private CountDownLatch arranqueRedLatch;
 
-    public OperarioCarga(Bateria _b, int _i, double _c){
+    public OperarioCarga(Bateria _b, int _i, double _c, CountDownLatch latch){
         this.bateria = Objects.requireNonNull(_b, "La batería no puede ser nula");
         this.idOperario = _i;
         this.cantidadRecarga = _c;
+        this.arranqueRedLatch = latch;
 
     }
 
     @Override
     public void run(){
         try {
+            arranqueRedLatch.await();
             while (activo) {
                 bateria.esperarSolicitudRecarga();
                 if (!activo) break;  // Chequea si debe terminar
@@ -26,7 +30,7 @@ public class OperarioCarga implements Runnable{
                 bateria.carga(cantidadRecarga);
                 System.out.println("[OperarioCarga " + idOperario + "] Recargados " + cantidadRecarga + " kWh");
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.err.println("[OperarioCarga " + idOperario + "] Interrumpido");
         }

@@ -48,7 +48,7 @@ public class Ventana {
      * Escribe una línea de texto en el color indicado.
      * Cada línea conserva su color.
      */
-    public void traza(String texto, Color color) {
+    public synchronized void traza(String texto, Color color) {
         Style style = pane.addStyle("estilo", null);
         StyleConstants.setForeground(style, color);
 

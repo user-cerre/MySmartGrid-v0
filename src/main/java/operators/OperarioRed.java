@@ -1,21 +1,33 @@
 
 package operators;
 
+import main.Config;
+
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+
 import energy.ConsumoPendiente;
 
 public class OperarioRed implements Runnable {
 
     private CentroControl centro;
     private int idOperario;
+    private CountDownLatch arranqueRedLatch;
 
-    public OperarioRed(CentroControl _c, int _i){
+    public OperarioRed(CentroControl _c, int _i, CountDownLatch latch){
         this.centro = _c;
         this.idOperario = _i;
+        this.arranqueRedLatch = Objects.requireNonNull(latch);
     }
     @Override
     public void run(){
         try{
-            centro.esperarArranque();
+            if(Config.MODO_DE_ARRANQUE_OPERARIOS == 0){
+                centro.esperarArranque();
+            }else if( Config.MODO_DE_ARRANQUE_OPERARIOS == 1){
+                centro.esperarArranqueBarreras();
+            }
+            arranqueRedLatch.countDown();
             while (true) {
                 ConsumoPendiente cp = centro.tomar();
                 if (cp == null){

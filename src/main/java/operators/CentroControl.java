@@ -1,8 +1,11 @@
 package operators;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.awt.Color;
 
 import energy.Consumo;
@@ -16,17 +19,19 @@ import main.Config;
 
 public class CentroControl {
     private ZonaEnergetica zona;
-    private Queue<ConsumoPendiente> colaConsumo;
+    private LinkedBlockingQueue<ConsumoPendiente> colaConsumo;
     private Semaphore semArranque;
     private Semaphore semConsumos;
-    int activeProducers;
+    private AtomicInteger activeProducers;
+    private CyclicBarrier barrera;
     Color color = Color.BLUE;
 
     public CentroControl() {
-        colaConsumo = new LinkedList<>();
-        activeProducers = 0;
+        colaConsumo = new LinkedBlockingQueue<>();
+        activeProducers = new AtomicInteger();
         semArranque = new Semaphore(0);
         semConsumos = new Semaphore(Config.MAX_CONSUMOS_EN_TRAMITACION);
+        barrera = new CyclicBarrier(Config.NUM_OPERADORES_POR_ZONA);
     }
 
     public void setZona(ZonaEnergetica zona) {
@@ -105,37 +110,37 @@ public class CentroControl {
         System.out.println("[CentroControl Z" + zona.getIdZona() + "] " + msg);
     }
 
-    public synchronized void depositar(ConsumoPendiente cp) {
+    public void depositar(ConsumoPendiente cp) {
         if (cp != null) {
-            colaConsumo.add(cp);
-            notify();
+            colaConsumo.offer(cp);
             traza("Consumo depositado: " + cp.getConsumo().getIdConsumo() + " (cola: " + colaConsumo.size() + ")");
         } else {
             throw new IllegalArgumentException("Consumo pendiente no puede ser null");
         }
     }
 
-    public synchronized ConsumoPendiente tomar() throws InterruptedException {
-        while (colaConsumo.isEmpty()) {
-            if (activeProducers == 0) {
-                return null; // No hay productores y cola vacía: terminar
+    public ConsumoPendiente tomar() throws InterruptedException {
+        ConsumoPendiente cp = null;
+        while (cp == null) {
+            cp = colaConsumo.poll(200, TimeUnit.MILLISECONDS);
+            if (cp != null) {
+                traza("Consumo tomado: " + cp.getConsumo().getIdConsumo() + " (cola: " + colaConsumo.size() + ")");
+                return cp; // No hay productores y cola vacía: terminar
             }
-            wait(); // Esperar a que depositen o termine un productor
+            if(activeProducers.get() == 0){
+                return null;
+            }
+            
         }
-        ConsumoPendiente cp = colaConsumo.poll();
-        traza("Consumo tomado: " + cp.getConsumo().getIdConsumo() + " (cola: " + colaConsumo.size() + ")");
         return cp;
     }
 
-    public synchronized void producerStarted() {
-        activeProducers++;
-        traza("Productor iniciado(activos :" + activeProducers + ")");
+    public void producerStarted() {
+        traza("Productor iniciado(activos :" + activeProducers.incrementAndGet() + ")");
     }
 
-    public synchronized void producerFinished() {
-        activeProducers--;
-        notifyAll();
-        traza("Productor finalizado (activos: " + activeProducers + ")");
+    public void producerFinished() {
+        traza("Productor finalizado (activos: " + activeProducers.decrementAndGet() + ")");
     }
     public void liberarOperarios(int n){
         semArranque.release(n);
@@ -150,5 +155,13 @@ public class CentroControl {
     
     public void liberarSlotConsumo() {
         semConsumos.release();
+    }
+
+    public void esperarArranqueBarreras() throws InterruptedException {
+        try {
+            barrera.await();
+        } catch (BrokenBarrierException e ) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

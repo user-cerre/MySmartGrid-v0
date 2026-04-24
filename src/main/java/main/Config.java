@@ -29,5 +29,7 @@ public final class Config {
     // Semáforos
     public static final int MAX_CONSUMOS_EN_TRAMITACION = 2;//Número de máximo de consumos que puede haber en tramitación simultánea por zona
     //Modo de lanzamiento de consumos: 0 = normal, 1 = observable, 2 = executor.
-    public static int CONSUMO_DESDE_FICHERO= 1;
+    public static int CONSUMO_DESDE_FICHERO= 2;
+    // Modo de arranque de operarios: 0 = semáforos, 1 =  CyclicBarrier 
+    public static int MODO_DE_ARRANQUE_OPERARIOS = 1;
 }
