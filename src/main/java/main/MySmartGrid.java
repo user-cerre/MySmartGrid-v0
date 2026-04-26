@@ -3,10 +3,20 @@ package main;
 import energy.Consumo;
 import energy.ConsumoRunnable;
 import energy.ConsumosMayoresTask;
+import energy.Demanda;
 import energy.MaxConsumoTask;
 import energy.RedEnergetica;
 import energy.Task;
+import grpc.*;
+import grpc.PreciosGrpc.PreciosStub;
+import grpc.PreciosProto.DemandaRequest;
+import grpc.PreciosProto.PreciosReply;
+import grpc.PreciosProto.PreciosRequest;
+import grpc.PreciosProto.PreciosRequest.Builder;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
 import io.reactivex.rxjava3.core.Observable;
 import operators.OperarioRed;
 import storage.Bateria;
@@ -14,7 +24,6 @@ import operators.CentroControl;
 import operators.OperarioCarga;
 import operators.RobotEolica;
 import operators.RobotSolar;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MySmartGrid {
 
@@ -129,7 +139,7 @@ public class MySmartGrid {
         fuente
         .subscribeOn(Schedulers.computation())
         .map(Consumo::getTotalKWh)
-        .reduce(0.0, Double::sum)
+        .reduce(0.0, (a, b) -> a + b)
         .subscribe(total-> System.out.println("SUMA RXJAVA: "+ Thread.currentThread().getName()+ " |Total:"+ total), Throwable::printStackTrace);
         try {
             Thread.sleep(500);
@@ -289,10 +299,76 @@ public class MySmartGrid {
             maxExecutor.shutdown();
         }
         ForkJoinVersion8(consumos);
-        // Auditoría final
-        red.imprimeAuditoria();
 
         //Versión 4: streams
         streamsVersion4(consumos);
+
+        // Auditoría final
+        red.imprimeAuditoria();
+//        ------------------------------------------------------------------------------------------------------------------------------------------
+        //TODO: Aquí necesito integrar el cliente de Precios
+        ManagedChannel preciosChannel = ManagedChannelBuilder
+                .forAddress(Config.HOST_PRECIOS, Config.PUERTO_PRECIOS)
+                .usePlaintext()
+                .build();
+
+        PreciosStub preciosStub = PreciosGrpc.newStub(preciosChannel);
+        CountDownLatch preciosLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> preciosError = new AtomicReference<>(null);
+
+        StreamObserver<PreciosReply> preciosResponseObserver = new StreamObserver<PreciosReply>() {
+            @Override
+            public void onNext(PreciosReply value) {
+                System.out.println("PRECIO -> " + value.getIdConsumo() + " : " + value.getPrecio());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                preciosError.set(t);
+                System.err.println("Error en calcularPrecios: " + t.getMessage());
+                preciosLatch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Calculo de precios completado");
+                preciosLatch.countDown();
+            }
+        };
+
+        StreamObserver<PreciosRequest> preciosRequestObserver = preciosStub.calcularPrecios(preciosResponseObserver);
+
+        for (Consumo c : consumos) {
+            Builder reqBuilder = PreciosRequest.newBuilder()
+                    .setIdConsumo(c.getIdConsumo())
+                    .setIdZona(c.getZona());
+
+            for (Demanda d : c.getDemandas()) {
+                DemandaRequest demandaReq = DemandaRequest.newBuilder()
+                        .setIdTipo(d.getIdTipo())
+                        .setKWh(d.getKWh())
+                        .setPrioridad(d.getPrioridad())
+                        .build();
+                reqBuilder.addDemandas(demandaReq);
+            }
+
+            preciosRequestObserver.onNext(reqBuilder.build());
+        }
+
+        preciosRequestObserver.onCompleted();
+
+        try {
+            preciosLatch.await(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Interrumpido esperando precios");
+        } finally {
+            preciosChannel.shutdown();
+        }
+
+        if (preciosError.get() != null) {
+            System.err.println("Hubo error en el servicio de precios");
+        }
+        
     }
 }

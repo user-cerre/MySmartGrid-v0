@@ -6,18 +6,30 @@ import main.Config;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
+import energy.Consumo;
 import energy.ConsumoPendiente;
+import energy.Demanda;
+import grpc.MonitorizacionGrpc;
+import grpc.MonitorizacionGrpc.MonitorizacionBlockingStub;
+import grpc.MonitorizacionProto.ConsumoRequest;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 public class OperarioRed implements Runnable {
 
     private CentroControl centro;
     private int idOperario;
     private CountDownLatch arranqueRedLatch;
-
+    private final ManagedChannel monitorizacionChannel;
+    private final MonitorizacionBlockingStub monitorizacionStub;
+    
     public OperarioRed(CentroControl _c, int _i, CountDownLatch latch){
         this.centro = _c;
         this.idOperario = _i;
         this.arranqueRedLatch = Objects.requireNonNull(latch);
+        this.monitorizacionChannel = ManagedChannelBuilder
+        		.forAddress(Config.HOST_MONITORIZACION, Config.PUERTO_MONITORIZACION).usePlaintext().build();
+        this.monitorizacionStub = MonitorizacionGrpc.newBlockingStub(monitorizacionChannel);
     }
     @Override
     public void run(){
@@ -36,8 +48,28 @@ public class OperarioRed implements Runnable {
                 }
                 centro.adquirirSlotConsumo();
                 try{
-                String resultado = centro.procesarConsumo(cp.getConsumo());
-                cp.markProcessed(resultado);
+                	Consumo consumo = cp.getConsumo();
+                	String resultado = centro.procesarConsumo(consumo);
+
+                	boolean solar = false;
+                	for (Demanda d : consumo.getDemandas()) {
+                	    if ("SOLAR".equalsIgnoreCase(d.getIdTipo())) {
+                	        solar = true;
+                	        break;
+                	    }
+                	}
+
+                	ConsumoRequest req = ConsumoRequest.newBuilder()
+                	.setIdConsumo(consumo.getIdConsumo())
+                	.setIdZona(consumo.getZona())
+                	.setKWh(consumo.getTotalKWh())
+                	.setDireccion(consumo.getDireccion())
+                	.setSolar(solar)
+                	.build();
+
+                	monitorizacionStub.anotarConsumo(req);
+
+                    cp.markProcessed(resultado);
                 }finally{
                     centro.liberarSlotConsumo();
                 }
@@ -45,7 +77,8 @@ public class OperarioRed implements Runnable {
         }catch(InterruptedException e){
             Thread.currentThread().interrupt();
             System.err.println("[Operario " + idOperario + "] Interrumpido");
-
+        } finally {
+            monitorizacionChannel.shutdown();
         }
     }
 }

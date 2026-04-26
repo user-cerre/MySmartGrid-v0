@@ -32,4 +32,12 @@ public final class Config {
     public static int CONSUMO_DESDE_FICHERO= 2;
     // Modo de arranque de operarios: 0 = semáforos, 1 =  CyclicBarrier 
     public static int MODO_DE_ARRANQUE_OPERARIOS = 1;
+    
+    public static String HOST_MONITORIZACION = "localhost";
+    
+    public static int PUERTO_MONITORIZACION = 9002;
+    
+    public static String HOST_PRECIOS = "localhost";
+    
+    public static int PUERTO_PRECIOS = 9004;
 }
