@@ -36,7 +36,7 @@ public class PreciosService extends PreciosImplBase{
 							+ " kWh=" + demanda.getKWh()
 							+ " coste=" + costeKwh, Ventana.NEGRO);
                 }
-				v.traza("[calcularPrecios] Precio total id=" + request.getIdConsumo() + " -> " + precioAcumulado, Ventana.VERDE);
+				v.traza("[calcularPrecios] Precio total id=" + request.getIdConsumo() + " -> " + precioAcumulado, Ventana.ROJO);
 
                 PreciosReply reply = PreciosReply.newBuilder()
                         .setIdConsumo(request.getIdConsumo())

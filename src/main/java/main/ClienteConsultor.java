@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import grpc.MonitorizacionGrpc;
 import grpc.MonitorizacionGrpc.MonitorizacionBlockingStub;
@@ -35,56 +36,56 @@ public class ClienteConsultor {
 				.usePlaintext().build();
         monitorizacionBlockingStub = MonitorizacionGrpc.newBlockingStub(channel);
         monitorizacionStub = MonitorizacionGrpc.newStub(channel);
-        v.traza("Canal abierto con " + ip + ":" + port, Color.GREEN);
+        v.traza("Canal abierto con " + ip + ":" + port, Ventana.VERDE);
 	}
 	
 	public void cerrarCanal() {
         if (channel != null) {
             channel.shutdown();
-            v.traza("Canal cerrado", Color.GREEN);
+            v.traza("Canal cerrado", Ventana.GRIS);
         }
 	}
 	
     public int consultarDemandaSolar(int idZona) {
         v.traza("--------------------------------------------------");
-        v.traza("Consulta demandaSolar para zona " + idZona, Color.BLUE);
+        v.traza("Consulta demandaSolar para zona " + idZona, Ventana.AZUL);
         DemandaRequest request = DemandaRequest.newBuilder().setIdZona(idZona).build();
         Iterator<DemandaReply> respuestas = monitorizacionBlockingStub.demandaSolar(request);
         int total = 0;
         while (respuestas.hasNext()) {
             DemandaReply reply = respuestas.next();
             total++;
-            v.traza("Consumo con solar: " + reply.getIdConsumo());
+            v.traza("Consumo con solar: " + reply.getIdConsumo(),Ventana.NEGRO);
         }
         if (total == 0) {
-            v.traza("No hay consumos solares en esa zona", Color.GRAY);
+            v.traza("No hay consumos solares en esa zona", Ventana.ROJO);
         }
-        v.traza("Total consumos solares en zona " + idZona + ": " + total, Color.BLUE);
+        v.traza("Total consumos solares en zona " + idZona + ": " + total, Ventana.ROJO);
         return total;
     }
 	
     public int consultarConsumosDireccion(List<String> direcciones) {
         v.traza("--------------------------------------------------");
-        v.traza("Consulta consumosDireccion", Color.BLUE);
+        v.traza("Consulta consumosDireccion", Ventana.AZUL);
         CountDownLatch latch = new CountDownLatch(1);
-        final int[] total = {0};
+        AtomicInteger total1 = new AtomicInteger(0);
 
         StreamObserver<DireccionReply> respuesta = new StreamObserver<DireccionReply>() {
             @Override
             public void onNext(DireccionReply value) {
-                total[0] = value.getTotal();
-                v.traza("Total direcciones con consumo solar: " + total[0], Color.BLUE);
+                total1.set(value.getTotal());
+                v.traza("Total direcciones con consumo solar: " + total1, Ventana.ROJO);
             }
 
             @Override
             public void onError(Throwable t) {
-                v.traza("Error en consumosDireccion: " + t.getMessage(), Color.RED);
+                v.traza("Error en consumosDireccion: " + t.getMessage(), Ventana.ROJO);
                 latch.countDown();
             }
 
             @Override
             public void onCompleted() {
-                v.traza("Consulta consumosDireccion finalizada", Color.GRAY);
+                v.traza("Consulta consumosDireccion finalizada", Ventana.GRIS);
                 latch.countDown();
             }
         };
@@ -92,7 +93,7 @@ public class ClienteConsultor {
         StreamObserver<DireccionRequest> peticiones = monitorizacionStub.consumosDireccion(respuesta);
         for (String direccion : direcciones) {
             peticiones.onNext(DireccionRequest.newBuilder().setDireccion(direccion).build());
-            v.traza("Enviada direccion: " + direccion);
+            v.traza("Enviada direccion: " + direccion, Ventana.VERDE);
         }
         peticiones.onCompleted();
 
@@ -100,18 +101,18 @@ public class ClienteConsultor {
             latch.await(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            v.traza("Interrumpido esperando respuesta", Color.RED);
+            v.traza("Interrumpido esperando respuesta", Ventana.ROJO);
         }
 
-        return total[0];
+        return total1.get();
     }
 	
     public static void main(String[] args) {
         ClienteConsultor cliente = new ClienteConsultor();
         cliente.iniciarCanal(Config.HOST_MONITORIZACION, Config.PUERTO_MONITORIZACION);
         try {
-            cliente.consultarDemandaSolar(1);
-            cliente.consultarConsumosDireccion(Arrays.asList("Sagitario, 24", "Berna, 11", "Roma, 2"));
+            cliente.consultarDemandaSolar(1);//ID de la zona
+            cliente.consultarConsumosDireccion(Arrays.asList("Sagitario, 24", "Berna, 11", "Roma, 2"));//En estas direcciones me devuelve si hay al menos un consumo solar
         } finally {
             cliente.cerrarCanal();
         }

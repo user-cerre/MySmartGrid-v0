@@ -10,7 +10,7 @@ import energy.Consumo;
 import energy.ConsumoPendiente;
 import energy.Demanda;
 import grpc.MonitorizacionGrpc;
-import grpc.MonitorizacionGrpc.MonitorizacionBlockingStub;
+import grpc.MonitorizacionGrpc.MonitorizacionStub;
 import grpc.MonitorizacionProto.ConsumoRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -21,7 +21,7 @@ public class OperarioRed implements Runnable {
     private int idOperario;
     private CountDownLatch arranqueRedLatch;
     private final ManagedChannel monitorizacionChannel;
-    private final MonitorizacionBlockingStub monitorizacionStub;
+    private final MonitorizacionStub monitorizacionStub;//MonitorizacionBlockingStub
     
     public OperarioRed(CentroControl _c, int _i, CountDownLatch latch){
         this.centro = _c;
@@ -29,7 +29,7 @@ public class OperarioRed implements Runnable {
         this.arranqueRedLatch = Objects.requireNonNull(latch);
         this.monitorizacionChannel = ManagedChannelBuilder
         		.forAddress(Config.HOST_MONITORIZACION, Config.PUERTO_MONITORIZACION).usePlaintext().build();
-        this.monitorizacionStub = MonitorizacionGrpc.newBlockingStub(monitorizacionChannel);
+        this.monitorizacionStub = MonitorizacionGrpc.newStub(monitorizacionChannel);
     }
     @Override
     public void run(){
@@ -67,7 +67,21 @@ public class OperarioRed implements Runnable {
                 	.setSolar(solar)
                 	.build();
 
-                	monitorizacionStub.anotarConsumo(req);
+//                	monitorizacionStub.anotarConsumo(req);
+                	monitorizacionStub.anotarConsumo(req, new io.grpc.stub.StreamObserver<grpc.MonitorizacionProto.ConsumoReply>() {
+                	    @Override
+                	    public void onNext(grpc.MonitorizacionProto.ConsumoReply value) {
+                	        // opcional: manejar ack
+                	    }
+                	    @Override
+                	    public void onError(Throwable t) {
+                	        System.err.println("[Operario " + idOperario + "] Error anotarConsumo: " + t.getMessage());
+                	    }
+                	    @Override
+                	    public void onCompleted() {
+                	        // no-op
+                	    }
+                	});
 
                     cp.markProcessed(resultado);
                 }finally{

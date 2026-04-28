@@ -144,7 +144,6 @@ public class MySmartGrid {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // TODO: handle exception
             Thread.currentThread().interrupt();
         }
         

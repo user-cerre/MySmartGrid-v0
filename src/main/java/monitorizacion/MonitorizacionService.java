@@ -31,7 +31,7 @@ public class MonitorizacionService extends MonitorizacionImplBase{
 			double totalZona = totalPorZonas.get(request.getIdZona());
 			totalRed += request.getKWh();
 			v.traza("[anotarConsumo] Totales -> zona " + request.getIdZona()
-					+ ": " + totalZona + " | red: " + totalRed, Ventana.VERDE);
+					+ ": " + totalZona + " | red: " + totalRed, Ventana.ROJO);
 			
 			ConsumoReply reply = ConsumoReply.newBuilder()
 					.setIdZona(request.getIdZona())
@@ -73,7 +73,7 @@ public class MonitorizacionService extends MonitorizacionImplBase{
 						if(c.getDireccion().equals(value.getDireccion()) && c.getSolar()) {
 							cont++;
 							v.traza("[consumosDireccion] Coincidencia solar en direccion=" + value.getDireccion()
-									+ " (total=" + cont + ")", Ventana.VERDE);
+									+ " (total=" + cont + ")", Ventana.ROJO);
 							break;
 						}
 					}
