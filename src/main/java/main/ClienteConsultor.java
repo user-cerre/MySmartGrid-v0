@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.Color;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
