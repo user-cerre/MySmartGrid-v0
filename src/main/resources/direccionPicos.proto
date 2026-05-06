@@ -1,0 +1,13 @@
+syntax = "proto3";
+option java_package = "grpc";
+service AnalisisRed {
+rpc detectarPicos(stream PicoRequest) returns (stream PicoReply) {}
+}
+message PicoRequest {
+string idConsumo = 1;
+double kWh = 2;
+}
+message PicoReply {
+string idConsumo = 1;
+double kWh = 2;
+}

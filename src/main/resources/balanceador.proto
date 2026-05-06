@@ -1,0 +1,17 @@
+syntax = "proto3";
+option java_package = "grpc";
+
+service Balanceador {
+  // Bidirectional: Flujo de ida y flujo de vuelta
+  rpc ajustarCarga(stream EstadoBateria) returns (stream InstruccionCarga) {}
+}
+
+message EstadoBateria {
+  int32 idBateria = 1;
+  int32 porcentaje = 2;
+}
+
+message InstruccionCarga {
+  string accion = 1; // "CARGAR", "DESCARGAR", "MANTENER"
+  int32 intensidad = 2;
+}

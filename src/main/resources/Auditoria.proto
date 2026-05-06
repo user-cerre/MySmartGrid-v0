@@ -1,0 +1,17 @@
+syntax = "proto3";
+option java_package = "grpc";
+
+service Auditoria {
+  // Unary: Una petición, una respuesta
+  rpc obtenerResumen(ZonaRequest) returns (ResumenReply) {}
+}
+
+message ZonaRequest {
+  int32 idZona = 1;
+}
+
+message ResumenReply {
+  int32 idZona = 1;
+  double totalKWh = 2;
+  int32 numConsumos = 3;
+}

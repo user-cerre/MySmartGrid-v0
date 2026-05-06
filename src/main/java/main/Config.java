@@ -33,11 +33,21 @@ public final class Config {
     // Modo de arranque de operarios: 0 = semáforos, 1 =  CyclicBarrier 
     public static int MODO_DE_ARRANQUE_OPERARIOS = 1;
     
-    public static String HOST_MONITORIZACION = "192.168.191.232";//localhost
+    public static String HOST_MONITORIZACION = "localhost";//localhost
     
     public static int PUERTO_MONITORIZACION = 9002;
     
-    public static String HOST_PRECIOS = "192.168.191.232";//localhost
+    public static String HOST_PRECIOS = "localhost";//localhost
     
     public static int PUERTO_PRECIOS = 9004;
+    
+    //DEFENSA PRÁCICA
+    public static String HOST_FILTRO = "localhost";
+    
+    public static int PUERTO_DEFENSA = 9006;
+    
+    //EXAMEN DEFENSA
+    public static String HOST_EXAMEN ="localhost";
+    
+    public static int PUERTO_EXAMEN = 9096;
 }

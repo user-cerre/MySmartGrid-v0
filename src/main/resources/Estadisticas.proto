@@ -1,0 +1,16 @@
+syntax = "proto3";
+option java_package = "grpc";
+
+service Estadisticas {
+  // Client Streaming: El cliente envía un flujo, el servidor responde una vez
+  rpc calcularMedia(stream DatoRequest) returns (MediaReply) {}
+}
+
+message DatoRequest {
+  int32 kwh = 1;
+}
+
+message MediaReply {
+  double mediaGlobal = 1;
+  int32 totalProcesados = 2;
+}

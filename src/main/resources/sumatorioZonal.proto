@@ -1,0 +1,14 @@
+syntax = "proto3";
+option java_package = "grpc";
+option java_outer_classname = "SumatorioZonalProto";
+service SumatorioZonal {
+rpc calcularSuma(stream ConsumoZonalRequest) returns (SumaReply) {}
+}
+message ConsumoZonalRequest {
+string idConsumo = 1;
+int32 idZona = 2;
+double kWh = 3;
+}
+message SumaReply {
+double totalKWh = 1;
+}

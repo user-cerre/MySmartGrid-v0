@@ -1,0 +1,17 @@
+syntax = "proto3";
+option java_package = "grpc";
+option java_outer_classname = "GestorDemandaOuterClass";
+
+service GestorDemanda {
+  rpc clasificarDemanda (stream ConsumoRequest) returns (stream ClasificacionReply) {}
+}
+
+message ConsumoRequest {
+  string idConsumo = 1;
+  int32  idZona    = 2;
+  double totalKWh  = 3;
+}
+message ClasificacionReply {
+  string idConsumo   = 1;
+  string categoria   = 2;
+}

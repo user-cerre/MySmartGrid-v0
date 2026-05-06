@@ -1,0 +1,17 @@
+syntax = "proto3";
+option java_package = "grpc";
+
+service Alertas {
+  // Server Streaming: El servidor devuelve un flujo (stream)
+  rpc listarConsumosCriticos(UmbralRequest) returns (stream AlertaReply) {}
+}
+
+message UmbralRequest {
+  int32 valorCorte = 1;
+}
+
+message AlertaReply {
+  string idConsumo = 1;
+  int32 kwh = 2;
+  string mensaje = 3; // Ejemplo: "EXCESO DE CONSUMO DETECTADO"
+}
