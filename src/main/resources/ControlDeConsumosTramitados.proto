@@ -1,0 +1,21 @@
+syntax = "proto3"; 
+option java_package = "grpc"; 
+option java_outer_classname = "RegistroOuterClass"; 
+
+service ControlDeConsumosTramitados { 
+	rpc registrarConsumo (RegistroRequest) returns (RegistroReply); 
+	rpc obtenerConsumosTramitados (TramitadosRequest) returns (stream TramitadosReply); 
+} 
+message RegistroRequest { 
+	int32 zona = 1; 
+} 
+message RegistroReply { 
+	bool resultado = 1; 
+} 
+message TramitadosRequest { 
+	bool pregunta = 1; 
+} 
+message TramitadosReply { 
+	int32 zona = 1; 
+	int32 numeroConsumos = 2; 
+}

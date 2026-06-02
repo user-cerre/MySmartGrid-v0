@@ -86,6 +86,7 @@ public class BalanceadorClient {
 		}
 		
 		
+		
 	}
 	public static void main(String[] args) {
 		BalanceadorClient client = new BalanceadorClient();

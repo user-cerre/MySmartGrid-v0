@@ -1,0 +1,15 @@
+syntax = "proto3";
+option java_package = "grpc";
+option java_outer_classname = "PagosOuterClass";
+service GestorPagos {
+rpc gestionarPagos (stream PagoRequest) returns (stream PagoReply);
+}
+message PagoRequest {
+string idConsumo = 1;
+int32 zona = 2;
+double importe = 3;
+}
+message PagoReply {
+string idConsumo = 1;
+bool resultado = 2;
+}

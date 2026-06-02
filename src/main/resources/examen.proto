@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "grpc";
+option java_outer_classname = "EstadoZonasProto";
+
+service EstadoZonas {
+  rpc zonasSaturadas (EstadoZonasRequest) returns (stream ZonaSaturadaReply);
+}
+
+message EstadoZonasRequest {
+  string NIF = 1;
+  string Apellidos = 2;
+  string IP = 3;
+}
+
+message ZonaSaturadaReply {
+  int32 idZona = 1;
+  string motivo = 2;
+}

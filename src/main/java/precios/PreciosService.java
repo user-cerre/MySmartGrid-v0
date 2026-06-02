@@ -20,22 +20,23 @@ public class PreciosService extends PreciosImplBase{
 			public void onNext(PreciosRequest request) {
 				v.traza("[calcularPrecios] Recibido id=" + request.getIdConsumo() + " zona=" + request.getIdZona(), Ventana.AZUL);
                 double precioAcumulado = 0.0;
-                for (DemandaRequest demanda : request.getDemandasList()) {
-                    double costeKwh;
-                    String tipo = demanda.getIdTipo().toLowerCase();
-                    
-                    if(tipo.contains("solar")) {
-                    	costeKwh = 0.08;
-                    } else if (tipo.contains("eólico") || tipo.contains("eolico")) {
-                        costeKwh = 0.10;
-                    } else {
-                        costeKwh = 0.15; // Tarifa normal
-                    }
-                    precioAcumulado += demanda.getKWh() * costeKwh;
+				for (DemandaRequest demanda : request.getDemandasList()) {
+					double costeKwh = 0.15; // valor por defecto (tarifa normal)
+					String tipo = demanda.getIdTipo().toLowerCase();
+
+					if (tipo.contains("SOLAR")) {
+						costeKwh = 0.08;
+					} else if (tipo.contains("EOLICA")) {
+						costeKwh = 0.10;
+					} else if (tipo.contains("RAPIDA")) {
+						costeKwh = 0.15;
+					}
+
+					precioAcumulado += demanda.getKWh() * costeKwh;
 					v.traza("[calcularPrecios] Demanda tipo=" + demanda.getIdTipo()
 							+ " kWh=" + demanda.getKWh()
 							+ " coste=" + costeKwh, Ventana.NEGRO);
-                }
+				}
 				v.traza("[calcularPrecios] Precio total id=" + request.getIdConsumo() + " -> " + precioAcumulado, Ventana.ROJO);
 
                 PreciosReply reply = PreciosReply.newBuilder()
@@ -61,5 +62,6 @@ public class PreciosService extends PreciosImplBase{
 			}
 			
 		};
+
 	}
 }

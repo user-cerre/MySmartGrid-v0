@@ -1,0 +1,16 @@
+syntax = "proto3"; 
+option java_package = "grpc"; 
+option java_outer_classname = "ReportadorOuterClass"; 
+
+service Reportador { 
+	rpc reportar (stream ConsumoRequest) returns (ReporteReply); 
+} 
+message ConsumoRequest { 
+	string idConsumo = 1; 
+	int32 zona = 2; 
+	int32 totalKwh = 3; 
+	int32 canalId = 4; 
+} 
+message ReporteReply { 
+	string resumen = 1; 
+}

@@ -1,0 +1,16 @@
+syntax = "proto3"; 
+option java_package = "grpc"; 
+option java_outer_classname = "EstimadorOuterClass"; 
+
+service EstimadorEnergetico {
+ 	rpc estimarTiempo(stream ConsumoRequest) returns (stream EstimacionReply) {} 
+ } 
+ message ConsumoRequest { 
+	 string idConsumo = 1; 
+ 	int32 zona = 2; 
+	 int32 totalKwh = 3; 
+ } 
+ message EstimacionReply { 
+	 string idConsumo = 1; 
+	 int32 tiempoEstimado = 2; 
+ }

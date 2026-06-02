@@ -1,0 +1,11 @@
+syntax = "proto3"; 
+option java_package = "grpc";
+option java_outer_classname = "ProcesadorOuterClass"; 
+service Procesador {  rpc procesar (stream ProcesarRequest) returns (ProcesarReply); } 
+message ProcesarRequest {  
+string idConsumo = 1;
+  int32 zona = 2; 
+  } 
+message ProcesarReply {
+  int32 numConsumos = 1; 
+  }
